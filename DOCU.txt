@@ -1,0 +1,24 @@
+OpenGL/TK Self-Documentation 
+
+##################
+#####TEXTURES#####
+
+- Textures are rendered in shader code 
+- Textures can be held in a float var using texture2D() method 
+- you can set a texture through iterating through the pixels in a vertice array (Vector3 vars are arrays). The for loop must first iterate through the y-axis then through the x-axis with a nested for loop. A texture could then be set over the entire mesh based on the vertice x and y count.
+
+UVs are used to wrap a texture correctly. 
+- How do you set the UV data based on the faces?
+
+You set the UV coordinate data in the nested for loop
+
+  
+
+
+
+
+
+
+
+
+Sources: geoff prewett - making outlines in opengl 

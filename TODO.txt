@@ -1,0 +1,63 @@
+TODO List:
+
+- make collisions for ground 
+- change object color 
+- change jump logic (having a bug where objects drop down when jumping - like space bar moves the ground down instead of moving the player up in the air)
+- set up building procedural generation
+- set up post processing for wireframe rendering 
+- lighting
+
+VORONOI PROCEDURAL GEN IDEA:
+Set up int[256] permutation table for generating seeds 
+
+Use simplex noise to create a gradient over the entire top face of ground cube
+
+Have the gradient hold grayscale values between range of -1.0f and 1.0f 
+Range value will determine value of Y vertices in cube gen 
+
+Goal: Produce a "cityscape" by procedurally generating buildings based on the Y-vert height value 
+
+
+
+
+cube verts ex
+
+		float [] playerVertices =
+		{
+			// (x,y,z)
+			// Front Face 
+			-0.5f, -0.1f, 0.5f, 
+			0.5f, -0.1f, 0.5f, 
+			0.5f, 0.1f, 0.5f, 
+			-0.5f, 0.1f, 0.5f
+
+			// Back face
+			-0.5f, -0.1f, -0.5f,
+			-0.5f,  0.1f, -0.5f,
+			0.5f,  0.1f, -0.5f,
+			0.5f, -0.1f, -0.5f,
+			
+			// Top face
+			-0.5f,  0.1f, -0.5f,
+			-0.5f,  0.1f,  0.5f,
+			0.5f,  0.1f,  0.5f,
+			0.5f,  0.1f, -0.5f,
+			
+			// Bottom face
+			-0.5f, -0.1f, -0.5f,
+			0.5f, -0.1f, -0.5f,
+			0.5f, -0.1f,  0.5f,
+			-0.5f, -0.1f,  0.5f,
+			
+			// Right face
+			0.5f, -0.1f, -0.5f,
+			0.5f,  0.1f, -0.5f,
+			0.5f,  0.1f,  0.5f,
+			0.5f, -0.1f,  0.5f,
+			
+			// Left face
+			-0.5f, -0.1f, -0.5f,
+			-0.5f, -0.1f,  0.5f,
+			-0.5f,  0.1f,  0.5f,
+			-0.5f,  0.1f, -0.5f
+		};
