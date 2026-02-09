@@ -24,47 +24,70 @@ namespace CubeRenderer
 			Scale = scale;
 			Color = color;
 
-			float[] vertices = {
-				-0.2f, -0.4f, 0.2f,
-				0.2f, -0.4f, 0.2f,
-				0.2f, 0.4f, 0.2f,
-				-0.2f, 0.4f, 0.2f, 
-
-				-0.2f, -0.4f, -0.2f,
-				-0.2f, 0.4f, -0.2f,
-				0.2f, 0.4f, -0.2f,
-				0.2f, -0.4f, 0.2f,
+			float[] vertices = 
+			{
+				// Front face (normal pointing toward +Z)
+				-0.2f, -0.4f,  0.2f,   0.0f,  0.0f,  1.0f,
+				0.2f, -0.4f,  0.2f,   0.0f,  0.0f,  1.0f,
+				0.2f,  0.4f,  0.2f,   0.0f,  0.0f,  1.0f,
+				-0.2f,  0.4f,  0.2f,   0.0f,  0.0f,  1.0f,
 				
-				-0.2f, 0.4f, -0.2f,
-				-0.2f, 0.4f, 0.2f,
-				0.2f, 0.4f, 0.2f,
-				0.2f, 0.4f, -0.2f,
-
-				-0.2f, -0.4f, -0.2f,
-				0.2f, -0.4f, -0.2f, 
-				0.2f, -0.4f, 0.2f,
-				-0.2f, -0.4f, 0.2f,
-
-				0.2f, -0.4f, -0.2f,
-			       	0.2f, 0.4f, -0.2f,
-				0.2f, 0.4f, 0.2f,
-				0.2f, -0.4f, 0.2f,
+				// Back face (normal pointing toward -Z)
+				-0.2f, -0.4f, -0.2f,   0.0f,  0.0f, -1.0f,
+				0.2f, -0.4f, -0.2f,   0.0f,  0.0f, -1.0f,
+				0.2f,  0.4f, -0.2f,   0.0f,  0.0f, -1.0f,
+				-0.2f,  0.4f, -0.2f,   0.0f,  0.0f, -1.0f,
 				
-				-0.2f, -0.4f, -0.2f,
-				-0.2f, -0.4f, 0.2f,
-				-0.2f, 0.4f, 0.2f, 
-				-0.2f, 0.4f, -0.2f	
-
+				// Left face (normal pointing toward -X)
+				-0.2f, -0.4f, -0.2f,  -1.0f,  0.0f,  0.0f,
+				-0.2f, -0.4f,  0.2f,  -1.0f,  0.0f,  0.0f,
+				-0.2f,  0.4f,  0.2f,  -1.0f,  0.0f,  0.0f,
+				-0.2f,  0.4f, -0.2f,  -1.0f,  0.0f,  0.0f,
+				
+				// Right face (normal pointing toward +X)
+				0.2f, -0.4f, -0.2f,   1.0f,  0.0f,  0.0f,
+				0.2f, -0.4f,  0.2f,   1.0f,  0.0f,  0.0f,
+				0.2f,  0.4f,  0.2f,   1.0f,  0.0f,  0.0f,
+				0.2f,  0.4f, -0.2f,   1.0f,  0.0f,  0.0f,
+				
+				// Top face (normal pointing toward +Y)
+				-0.2f,  0.4f, -0.2f,   0.0f,  1.0f,  0.0f,
+				-0.2f,  0.4f,  0.2f,   0.0f,  1.0f,  0.0f,
+				0.2f,  0.4f,  0.2f,   0.0f,  1.0f,  0.0f,
+				0.2f,  0.4f, -0.2f,   0.0f,  1.0f,  0.0f,
+				
+				// Bottom face (normal pointing toward -Y)
+				-0.2f, -0.4f, -0.2f,   0.0f, -1.0f,  0.0f,
+				-0.2f, -0.4f,  0.2f,   0.0f, -1.0f,  0.0f,
+				0.2f, -0.4f,  0.2f,   0.0f, -1.0f,  0.0f,
+				0.2f, -0.4f, -0.2f,   0.0f, -1.0f,  0.0f,
 			};
 
-			uint[] indices =
+			uint[] indices = 
 			{
-				0, 1, 2, 2, 3, 0,       
-				4, 5, 6, 6, 7, 4,
-				8, 9, 10, 10, 11, 8,    
-				12, 13, 14, 14, 15, 12, 
-				16, 17, 18, 18, 19, 16, 
-				20, 21, 22, 22, 23, 20  
+				// Front face
+				0, 1, 2,
+				2, 3, 0,
+				
+				// Back face
+				4, 5, 6,
+				6, 7, 4,
+				
+				// Left face
+				8, 9, 10,
+				10, 11, 8,
+				
+				// Right face
+				12, 13, 14,
+				14, 15, 12,
+				
+				// Top face
+				16, 17, 18,
+				18, 19, 16,
+				
+				// Bottom face
+				20, 21, 22,
+				22, 23, 20
 			};
 
 			IndexCount = indices.Length;
@@ -80,8 +103,10 @@ namespace CubeRenderer
 			GL.BindBuffer(BufferTarget.ElementArrayBuffer, _squareEBO);
 			GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(uint), indices, BufferUsageHint.StaticDraw);
 
-			GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float,false, 3 * sizeof(float), 0);
-			GL.EnableVertexArrayAttrib(_squareVAO, 0);
+			GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float,false, 6 * sizeof(float), 0);
+			GL.EnableVertexAttribArray(0);
+
+			GL.VertexAttribPointer(1,3, VertexAttribPointerType.Float,false, 6 * sizeof(float), 3 * sizeof(float)); 
 		}
 
 		public void Draw(Shader shader)

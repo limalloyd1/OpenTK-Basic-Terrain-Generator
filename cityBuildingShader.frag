@@ -12,7 +12,7 @@ uniform vec3 viewPos;
 void main()
 {
     // Ambient lighting with a tint
-    float ambientStrength = 0.5;
+    float ambientStrength = 0.3;
     vec3 shadowTint = vec3(0.7, 0.8, 1.0);  // Cool blue tint for shadows
     vec3 ambient = ambientStrength * lightColor * shadowTint;
     
@@ -33,3 +33,9 @@ void main()
     vec3 result = (ambient + diffuse + specular) * color.rgb;
     FragColor = vec4(result, color.a);
 }
+
+
+
+
+
+

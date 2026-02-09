@@ -73,6 +73,12 @@ namespace GameSpace
 			GL.Uniform4(location, x, y, z, w);
 		}
 
+		public void SetVector3(string name, Vector3 value)
+		{
+			int location = GL.GetUniformLocation(Handle, name);
+			GL.Uniform3(location, value);
+		}
+
 		public void SetMatrix4(string name, Matrix4 data)
 		{
 			int location = GL.GetUniformLocation(Handle, name);
@@ -158,6 +164,9 @@ namespace GameSpace
 			-0.5f,  0.5f, -0.5f
 		};
 
+		List<Cube> _buildings;
+		List<Cube> _cityBuildings;
+
 		uint[] indices =
 		{
 			0, 1, 2, 2, 3, 0,       // Front
@@ -174,7 +183,7 @@ namespace GameSpace
 		private Vector3 _cameraPosition = new Vector3(0, 1.7f, 10);
 		private Vector3 _cameraFront = new Vector3(0,0,-1);
 		private Vector3 _cameraUp = Vector3.UnitY;
-		private float _cameraSpeed = 2.5f;
+		private float _cameraSpeed = 7.5f;
 
 		private bool _firstMove = true;
 		private Vector2 _lastPos;
@@ -190,12 +199,15 @@ namespace GameSpace
 
 		private int _elementBuffer;
 
-		private Cube _baseBuilding;
-		private Cube _building2;
+		private Cube _baseBuilding = null;
+		private Cube _building2 = null;
+
+		
 
 
 		Shader _shader;
 		Shader _buildingShader;
+		Shader _cityShader;
 
 		int _vertexBuffer;
 		int VertexArrayObject;
@@ -221,7 +233,14 @@ namespace GameSpace
 			GL.Disable(EnableCap.CullFace);
 			GL.Viewport(0, 0, Size.X, Size.Y); 
 			Console.WriteLine("Loading Window...");
-			GL.ClearColor(0.1f,0.2f,0.4f,1.0f);
+			// Brown Sky
+			// GL.ClearColor(0.25f,0.2f,0.23f, 1.0f);
+
+			// Navy Blue Sky
+			// GL.ClearColor(0.1f,0.2f,0.4f,1.0f);
+
+			// Gray Sky
+			GL.ClearColor(0.5f,0.75f,0.8f, 1.0f);
 
 			VertexArrayObject = GL.GenVertexArray(); // generate VAO
 			GL.BindVertexArray(VertexArrayObject); // bind variable as VAO object
@@ -241,21 +260,73 @@ namespace GameSpace
 
 			Console.WriteLine($"First vertex: ({vertices[0]}, {vertices[1]}, {vertices[2]})");
 			
-			GL.VertexAttribPointer(0,3,VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
-			GL.EnableVertexArrayAttrib(VertexArrayObject, 0); // sets VAO attrib to 0?
+			GL.VertexAttribPointer(0,3,VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
+			GL.EnableVertexAttribArray(0); // sets VAO attrib to 0?
 			
-			_baseBuilding = new Cube(
-				new Vector3(-4, 5, -3),           // Position
-				new Vector3(5, 15, 5),           // Scale
-				new Vector4(0.2f, 0.6f, 0.9f, 1.0f)  // Blue color
-			);
+			GL.VertexAttribPointer(1,3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 3 * sizeof(float));
+			GL.EnableVertexAttribArray(1);
+			// _baseBuilding = new Cube(
+			// 	new Vector3(-4, 5, -3),           // Position
+			// 	new Vector3(5, 15, 5),           // Scale
+			// 	new Vector4(0.2f, 0.6f, 0.9f, 1.0f)  // Blue color
+			// );
 
-			_building2 = new Cube(
-				// (x,y,z)
-				new Vector3(4, 7, -4),           // Position
-				new Vector3(7, 20, 7),           // Scale
-				new Vector4(0.2f, 0.6f, 0.9f, 1.0f)  // Blue color
-			);
+			// _building2 = new Cube(
+			// 	// (x,y,z)
+			// 	new Vector3(4, 7, -4),           // Position
+			// 	new Vector3(7, 20, 7),           // Scale
+			// 	new Vector4(0.2f, 0.6f, 0.9f, 1.0f)  // Blue color
+			// );
+
+			_buildings = new List<Cube>();
+			Random random = new Random();
+			for (int i = 0; i < 5; i++)
+			{
+				float x = (float)(random.NextDouble() * 80 - 40); // -40 to 40
+				float z = (float)(random.NextDouble() * 80 - 40); //-40 to 40
+
+				// Random scale
+				float width = (float)(random.NextDouble() * 2 + 6); // 3 to 6
+				float height = (float)(random.NextDouble() * 2 + 19); // 5 to 20
+				float depth = (float)(random.NextDouble() * 2 + 6); //3 to 6
+
+				// Set Y Pos to half so building sits on ground
+				Vector3 position = new Vector3(x, 5f, z);
+				Vector3 scale = new Vector3(width, height, depth);
+
+				Vector4 color = new Vector4(0.3f,0.6f,0.9f,1.0f);
+
+				Cube building = new Cube(position, scale, color);
+				_buildings.Add(building);
+			}
+
+			_cityBuildings = new List<Cube>();
+			Random cityRandom = new Random();
+
+			int rows = 4;
+			int cols = 5; // 4*5 = 20 buildings
+			float spacing = 15f;
+
+			for (int i = 0; i<20; i++)
+			{
+				int row = i / cols; // which row (0-3)
+				int col = i % cols; // which column (0-4)
+
+				// Calculate position based on grid
+				float x = col * spacing - (cols * spacing/2); // Center grid
+				float z = row * spacing - (rows * spacing/2);
+
+				float width = (float)(cityRandom.NextDouble() * 2 + 6);
+				float height = (float)(cityRandom.NextDouble() * 2 + 19);
+				float depth = (float)(cityRandom.NextDouble() * 2 + 6);
+
+				Vector3 position = new Vector3(x, 7f, z);
+				Vector3 scale = new Vector3(width, height, depth);
+				Vector4 color = new Vector4(0.8f,0.5f,0.7f,1.0f);
+
+				Cube building = new Cube(position, scale, color);
+				_cityBuildings.Add(building);
+			}
 
 
 			string vertexPath = "shader.vert";
@@ -263,6 +334,8 @@ namespace GameSpace
 
 			string buildingVertex = "buildingShader.vert";
 			string buildingFragment = "buildingShader.frag";
+
+			string cityBuildingFragment = "cityBuildingShader.frag";
 
 
 			Console.WriteLine($"Vertex shader path: {Path.GetFullPath(vertexPath)}");
@@ -283,6 +356,7 @@ namespace GameSpace
 
 			_shader = new Shader(vertexPath, fragmentPath);
 			_buildingShader = new Shader(buildingVertex, buildingFragment);
+			// _cityShader = new Shader(buildingVertex, cityBuildingFragment);
 			Console.WriteLine("Shader created - no exceptions thrown");
 
 
@@ -398,13 +472,15 @@ namespace GameSpace
 
 			_shader.Use();
 		
-
-
 			_view = Matrix4.LookAt(_cameraPosition, _cameraPosition + _cameraFront, _cameraUp);
 			_shader.SetMatrix4("view", _view);
     		_shader.SetMatrix4("projection", _projection);
 
+			_shader.SetVector3("lightPos", new Vector3(50f, 50f, 50f));
+			_shader.SetVector3("lightColor", new Vector3(1.0f, 0.9f, 0.7f));
+			_shader.SetVector3("viewPos", _cameraPosition);
 
+			// DEBUG
 			if (_frameCount == 0)
 			{
 				Console.WriteLine($"=== FRAME {_frameCount} START ===");
@@ -423,20 +499,39 @@ namespace GameSpace
 			_frameCount++;
 
 			// Draw ground
-			_shader.SetVector4("color", 0.65f, 0.50f,0.48f, 1.0f); 
-			// Matrix4 groundModel = Matrix4.Identity;
+			_shader.SetVector4("color", 0.65f,0.58f,0.48f, 1.0f); 
 			Matrix4 groundModel = Matrix4.CreateScale(100.0f, 0.2f, 100.0f);
 			_shader.SetMatrix4("model", groundModel);
-			// _shader.SetMatrix4("view", _view);
-			// _shader.SetMatrix4("projection", _projection);
 			GL.BindVertexArray(VertexArrayObject);
 			GL.DrawElements(PrimitiveType.Triangles, 36, DrawElementsType.UnsignedInt, 0);
 
 			_buildingShader.Use();
 			_buildingShader.SetMatrix4("view", _view);
     		_buildingShader.SetMatrix4("projection", _projection);
-			_baseBuilding.Draw(_buildingShader);
-			_building2.Draw(_buildingShader);
+
+			_buildingShader.SetVector3("lightPos", new Vector3(50f, 50f, 50f));
+			_buildingShader.SetVector3("lightColor", new Vector3(1.0f, 0.85f, 0.6f));
+			_buildingShader.SetVector3("viewPos", _cameraPosition);
+
+			// _baseBuilding.Draw(_buildingShader);
+			// _building2.Draw(_buildingShader);
+			foreach (Cube building in _buildings)
+			{
+				building.Draw(_buildingShader);				
+			}
+
+			// _cityShader.Use();
+			// _cityShader.SetMatrix4("view", _view);
+			// _cityShader.SetMatrix4("projection", _projection);
+
+			// _cityShader.SetVector3("lightPos", new Vector3(50f, 50f, 50f));
+			// _cityShader.SetVector3("lightColor", new Vector3(1.0f, 0.85f, 0.6f));
+			// _cityShader.SetVector3("viewPos", _cameraPosition);
+
+			foreach (Cube building in _cityBuildings)
+			{
+				building.Draw(_buildingShader);
+			}
 			
 			SwapBuffers();
 		}
@@ -461,8 +556,19 @@ namespace GameSpace
 
 			_shader.Dispose();
 			_buildingShader.Dispose();
-			_baseBuilding.Dispose();
-			_building2.Dispose();
+			// _cityShader.Dispose();
+			//_baseBuilding.Dispose();
+			//_building2.Dispose();
+
+			foreach (Cube building in _buildings)
+			{
+				building.Dispose();
+			}
+
+			foreach (Cube building in _cityBuildings)
+			{
+				building.Dispose();
+			}
 
 			GL.DeleteBuffer(_vertexBuffer);
 			GL.DeleteVertexArray(VertexArrayObject);

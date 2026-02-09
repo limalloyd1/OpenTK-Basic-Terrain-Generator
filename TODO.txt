@@ -1,11 +1,18 @@
 TODO List:
+- set up vertices for ground (instead of Matrix4 groundModel = Matrix4.CreateScale())
+- set up guidlines for buildings spawning around each other
+- fix ground clipping
+- add player cube (3rd-person model)
+- change sky color (grey color w noise) in GL.ClearColor()
 
 - make collisions for ground 
-- change object color 
+- change object color (fragment shaders) 
+
 - change jump logic (having a bug where objects drop down when jumping - like space bar moves the ground down instead of moving the player up in the air)
 - set up building procedural generation
 - set up post processing for wireframe rendering 
 - lighting
+- set up post processing for shadows (ray tracing)
 
 VORONOI PROCEDURAL GEN IDEA:
 Set up int[256] permutation table for generating seeds 
