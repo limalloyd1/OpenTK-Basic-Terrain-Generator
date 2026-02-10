@@ -147,6 +147,9 @@ namespace GameSpace
 		int _groundVBO;
 		int _groundEBO;
 
+		int _skyboxVAO;
+		int _skyboxVBO;
+
 
 		Matrix4 _view;
 		Matrix4 _projection;
@@ -178,6 +181,7 @@ namespace GameSpace
 		Shader _shader;
 		Shader _buildingShader;
 		Shader _cityShader;
+		Shader _skyboxShader;
 
 		// int _vertexBuffer;
 		// int VertexArrayObject;
@@ -201,8 +205,67 @@ namespace GameSpace
 			CursorState = CursorState.Grabbed;
 			GL.Enable(EnableCap.DepthTest);
 			GL.Disable(EnableCap.CullFace);
+
 			GL.Viewport(0, 0, Size.X, Size.Y); 
 			Console.WriteLine("Loading Window...");
+
+			// Create skybox shader
+			_skyboxShader = new Shader("skybox.vert", "skybox.frag");
+
+			// Skybox cube vertices (large cube around camera)
+			float[] skyboxVertices = {
+				-1.0f,  1.0f, -1.0f,
+				-1.0f, -1.0f, -1.0f,
+				1.0f, -1.0f, -1.0f,
+				1.0f, -1.0f, -1.0f,
+				1.0f,  1.0f, -1.0f,
+				-1.0f,  1.0f, -1.0f,
+
+				-1.0f, -1.0f,  1.0f,
+				-1.0f, -1.0f, -1.0f,
+				-1.0f,  1.0f, -1.0f,
+				-1.0f,  1.0f, -1.0f,
+				-1.0f,  1.0f,  1.0f,
+				-1.0f, -1.0f,  1.0f,
+
+				1.0f, -1.0f, -1.0f,
+				1.0f, -1.0f,  1.0f,
+				1.0f,  1.0f,  1.0f,
+				1.0f,  1.0f,  1.0f,
+				1.0f,  1.0f, -1.0f,
+				1.0f, -1.0f, -1.0f,
+
+				-1.0f, -1.0f,  1.0f,
+				-1.0f,  1.0f,  1.0f,
+				1.0f,  1.0f,  1.0f,
+				1.0f,  1.0f,  1.0f,
+				1.0f, -1.0f,  1.0f,
+				-1.0f, -1.0f,  1.0f,
+
+				-1.0f,  1.0f, -1.0f,
+				1.0f,  1.0f, -1.0f,
+				1.0f,  1.0f,  1.0f,
+				1.0f,  1.0f,  1.0f,
+				-1.0f,  1.0f,  1.0f,
+				-1.0f,  1.0f, -1.0f,
+
+				-1.0f, -1.0f, -1.0f,
+				-1.0f, -1.0f,  1.0f,
+				1.0f, -1.0f, -1.0f,
+				1.0f, -1.0f, -1.0f,
+				-1.0f, -1.0f,  1.0f,
+				1.0f, -1.0f,  1.0f
+			};
+
+			_skyboxVAO = GL.GenVertexArray();
+			GL.BindVertexArray(_skyboxVAO);
+
+			_skyboxVBO = GL.GenBuffer();
+			GL.BindBuffer(BufferTarget.ArrayBuffer, _skyboxVBO);
+			GL.BufferData(BufferTarget.ArrayBuffer, skyboxVertices.Length * sizeof(float), skyboxVertices, BufferUsageHint.StaticDraw);
+
+			GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
+			GL.EnableVertexAttribArray(0);
 			// Brown Sky
 			// GL.ClearColor(0.25f,0.2f,0.23f, 1.0f);
 
@@ -260,7 +323,7 @@ namespace GameSpace
 			int cols = 5; // 4*5 = 20 buildings
 			float spacing = 15f;
 
-			for (int i = 0; i<20; i++)
+			for (int i = 0; i< 5; i++)
 			{
 				int row = i / cols; // which row (0-3)
 				int col = i % cols; // which column (0-4)
@@ -289,6 +352,7 @@ namespace GameSpace
 			string buildingFragment = "buildingShader.frag";
 
 			string cityBuildingFragment = "cityBuildingShader.frag";
+
 
 
 			Console.WriteLine($"Vertex shader path: {Path.GetFullPath(vertexPath)}");
@@ -381,7 +445,7 @@ namespace GameSpace
 				{
 					GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
 
-					GL.Enable(EnableCap.CullFace);
+					// GL.Enable(EnableCap.CullFace);
 					GL.Disable(EnableCap.PolygonOffsetLine);
 					GL.PolygonOffset(0f, 0f);
 				}
@@ -423,9 +487,19 @@ namespace GameSpace
 
 			GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
+			_view = Matrix4.LookAt(_cameraPosition, _cameraPosition + _cameraFront, _cameraUp);
+
+			GL.DepthFunc(DepthFunction.Lequal);
+			_skyboxShader.Use();
+			_skyboxShader.SetMatrix4("view", _view);
+			_skyboxShader.SetMatrix4("projection", _projection);
+			GL.BindVertexArray(_skyboxVAO);
+			GL.DrawArrays(PrimitiveType.Triangles, 0, 36);
+			GL.DepthFunc(DepthFunction.Less);
+
 			_shader.Use();
 		
-			_view = Matrix4.LookAt(_cameraPosition, _cameraPosition + _cameraFront, _cameraUp);
+			
 			_shader.SetMatrix4("view", _view);
     		_shader.SetMatrix4("projection", _projection);
 

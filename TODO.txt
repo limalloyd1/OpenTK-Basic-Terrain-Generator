@@ -5,6 +5,10 @@ TODO List:
 - add player cube (3rd-person model)
 - change sky color (grey color w noise) in GL.ClearColor()
 
+- make infinite world (how to get rid of edge of world)
+- set up Assimp Importing
+- import shrine as first landmark 
+
 - make collisions for ground 
 - change object color (fragment shaders) 
 
