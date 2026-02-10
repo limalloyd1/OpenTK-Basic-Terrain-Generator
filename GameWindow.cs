@@ -8,6 +8,7 @@ using CubeRenderer;
 using ErrorCode = OpenTK.Graphics.OpenGL4.ErrorCode;
 using System.IO;
 using System;
+using FBXModelLoaderSpace;
 
 namespace GameSpace
 {
@@ -125,8 +126,10 @@ namespace GameSpace
 	{
 
 
-		List<Pyramid> _buildings;
+		List<Cube> _buildings;
 		List<Cube> _cityBuildings;
+		private FBXModelLoaderPN _fbxLoader;
+		private List<GLMeshPN> _importedMeshes;
 
 		float[] groundVertices = 
 		{
@@ -201,7 +204,6 @@ namespace GameSpace
 		{
 			base.OnLoad();
 
-			
 			CursorState = CursorState.Grabbed;
 			GL.Enable(EnableCap.DepthTest);
 			GL.Disable(EnableCap.CullFace);
@@ -294,9 +296,9 @@ namespace GameSpace
 			GL.EnableVertexAttribArray(1);
 
 
-			_buildings = new List<Pyramid>();
+			_buildings = new List<Cube>();
 			Random random = new Random();
-			for (int i = 0; i < 5; i++)
+			for (int i = 0; i < 15; i++)
 			{
 				float x = (float)(random.NextDouble() * 80 - 40); // -40 to 40
 				float z = (float)(random.NextDouble() * 80 - 40); //-40 to 40
@@ -310,9 +312,9 @@ namespace GameSpace
 				Vector3 position = new Vector3(x, 2f, z);
 				Vector3 scale = new Vector3(width, height, depth);
 
-				Vector4 color = new Vector4(0.60f,0.35f,0.35f,1.0f);
+				Vector4 color = new Vector4(0.50f,0.35f,0.35f,1.0f);
 
-				Pyramid building = new Pyramid(position, scale, color);
+				Cube building = new Cube(position, scale, color);
 				_buildings.Add(building);
 			}
 
@@ -323,7 +325,7 @@ namespace GameSpace
 			int cols = 5; // 4*5 = 20 buildings
 			float spacing = 15f;
 
-			for (int i = 0; i< 5; i++)
+			for (int i = 0; i< 20; i++)
 			{
 				int row = i / cols; // which row (0-3)
 				int col = i % cols; // which column (0-4)
@@ -338,7 +340,7 @@ namespace GameSpace
 
 				Vector3 position = new Vector3(x, 7f, z);
 				Vector3 scale = new Vector3(width, height, depth);
-				Vector4 color = new Vector4(0.1f,0.1f,0.1f,1.0f);
+				Vector4 color = new Vector4(0.45f,0.5f,0.6f,1.0f);
 
 				Cube building = new Cube(position, scale, color);
 				_cityBuildings.Add(building);
@@ -355,26 +357,19 @@ namespace GameSpace
 
 
 
-			Console.WriteLine($"Vertex shader path: {Path.GetFullPath(vertexPath)}");
-			Console.WriteLine($"Vertex shader exists: {File.Exists(vertexPath)}");
-			Console.WriteLine($"Fragment shader path: {Path.GetFullPath(fragmentPath)}");
-			Console.WriteLine($"Fragment shader exists: {File.Exists(fragmentPath)}");
-
-			Console.WriteLine($"Building Vertex shader path: {Path.GetFullPath(buildingVertex)}");
-			Console.WriteLine($"Building Vertex shader exists: {File.Exists(buildingVertex)}");
-			Console.WriteLine($"Buildig Fragment shader path: {Path.GetFullPath(buildingFragment)}");
-			Console.WriteLine($"Building Fragment shader exists: {File.Exists(buildingFragment)}");
-
-			if (File.Exists(vertexPath))
-			{
-				string vertContent = File.ReadAllText(vertexPath);
-				Console.WriteLine($"Vertex shader first 50 chars: {vertContent.Substring(0, Math.Min(50, vertContent.Length))}");
-			}
-
 			_shader = new Shader(vertexPath, fragmentPath);
 			_buildingShader = new Shader(buildingVertex, buildingFragment);
 			// _cityShader = new Shader(buildingVertex, cityBuildingFragment);
 			Console.WriteLine("Shader created - no exceptions thrown");
+
+			_fbxLoader = new FBXModelLoaderPN();
+
+			_importedMeshes = _fbxLoader.LoadToGL(
+				filePath:"3DModels/shrine1EXP.fbx";
+				position: new Vector3(0f, 0f, 5f),
+				scale: new Vector3(0.01f, 0.01f, 0.01f); // scaled down for compilatiohn
+				color: new Vector4(0.8f,0.8f,0.8f,1.0f)
+			);
 
 
 			_projection = Matrix4.CreatePerspectiveFieldOfView(
@@ -526,7 +521,7 @@ namespace GameSpace
 			_frameCount++;
 
 			// Draw ground
-			_shader.SetVector4("color", 0.65f,0.58f,0.48f, 1.0f); 
+			_shader.SetVector4("color", 0.28f,0.55f,0.20f, 1.0f); 
 			Matrix4 groundModel = Matrix4.Identity;
 			_shader.SetMatrix4("model", groundModel);
 
@@ -546,22 +541,24 @@ namespace GameSpace
 
 			// _baseBuilding.Draw(_buildingShader);
 			// _building2.Draw(_buildingShader);
-			foreach (Pyramid building in _buildings)
+			foreach (Cube building in _buildings)
 			{
 				building.Draw(_buildingShader);				
 			}
 
-			// _cityShader.Use();
-			// _cityShader.SetMatrix4("view", _view);
-			// _cityShader.SetMatrix4("projection", _projection);
-
-			// _cityShader.SetVector3("lightPos", new Vector3(50f, 50f, 50f));
-			// _cityShader.SetVector3("lightColor", new Vector3(1.0f, 0.85f, 0.6f));
-			// _cityShader.SetVector3("viewPos", _cameraPosition);
 
 			foreach (Cube building in _cityBuildings)
 			{
 				building.Draw(_buildingShader);
+			}
+			
+			if (_importedMeshes != null)
+			{
+				foreach(var m in _importedMeshes)
+				{
+					m.Draw(_buildingShader);
+				}
+
 			}
 			
 			SwapBuffers();
@@ -591,7 +588,7 @@ namespace GameSpace
 			//_baseBuilding.Dispose();
 			//_building2.Dispose();
 
-			foreach (Pyramid building in _buildings)
+			foreach (Cube building in _buildings)
 			{
 				building.Dispose();
 			}
@@ -600,6 +597,17 @@ namespace GameSpace
 			{
 				building.Dispose();
 			}
+
+			if (_importedMeshes != null)
+			{
+				foreach(var m in _importedMeshes)
+				{
+					m.Dispose(); 
+				}
+
+			}
+
+			_fbxLoader?.Dispose();
 
 			GL.DeleteBuffer(_groundVBO);
 			GL.DeleteVertexArray(_groundVAO);
