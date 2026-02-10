@@ -125,7 +125,7 @@ namespace GameSpace
 	{
 
 
-		List<Cube> _buildings;
+		List<Pyramid> _buildings;
 		List<Cube> _cityBuildings;
 
 		float[] groundVertices = 
@@ -294,7 +294,7 @@ namespace GameSpace
 			GL.EnableVertexAttribArray(1);
 
 
-			_buildings = new List<Cube>();
+			_buildings = new List<Pyramid>();
 			Random random = new Random();
 			for (int i = 0; i < 5; i++)
 			{
@@ -302,17 +302,17 @@ namespace GameSpace
 				float z = (float)(random.NextDouble() * 80 - 40); //-40 to 40
 
 				// Random scale
-				float width = (float)(random.NextDouble() * 2 + 6); // 3 to 6
-				float height = (float)(random.NextDouble() * 2 + 19); // 5 to 20
-				float depth = (float)(random.NextDouble() * 2 + 6); //3 to 6
+				float width = (float)(random.NextDouble() * 8 + 18); // 3 to 6
+				float height = (float)(random.NextDouble() * 6 + 10); // 5 to 20
+				float depth = (float)(random.NextDouble() * 8 + 18); //3 to 6
 
 				// Set Y Pos to half so building sits on ground
-				Vector3 position = new Vector3(x, 5f, z);
+				Vector3 position = new Vector3(x, 2f, z);
 				Vector3 scale = new Vector3(width, height, depth);
 
-				Vector4 color = new Vector4(0.3f,0.6f,0.9f,1.0f);
+				Vector4 color = new Vector4(0.60f,0.35f,0.35f,1.0f);
 
-				Cube building = new Cube(position, scale, color);
+				Pyramid building = new Pyramid(position, scale, color);
 				_buildings.Add(building);
 			}
 
@@ -338,7 +338,7 @@ namespace GameSpace
 
 				Vector3 position = new Vector3(x, 7f, z);
 				Vector3 scale = new Vector3(width, height, depth);
-				Vector4 color = new Vector4(0.8f,0.5f,0.7f,1.0f);
+				Vector4 color = new Vector4(0.1f,0.1f,0.1f,1.0f);
 
 				Cube building = new Cube(position, scale, color);
 				_cityBuildings.Add(building);
@@ -546,7 +546,7 @@ namespace GameSpace
 
 			// _baseBuilding.Draw(_buildingShader);
 			// _building2.Draw(_buildingShader);
-			foreach (Cube building in _buildings)
+			foreach (Pyramid building in _buildings)
 			{
 				building.Draw(_buildingShader);				
 			}
@@ -591,7 +591,7 @@ namespace GameSpace
 			//_baseBuilding.Dispose();
 			//_building2.Dispose();
 
-			foreach (Cube building in _buildings)
+			foreach (Pyramid building in _buildings)
 			{
 				building.Dispose();
 			}
