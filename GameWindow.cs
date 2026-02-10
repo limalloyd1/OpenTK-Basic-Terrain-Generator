@@ -298,7 +298,7 @@ namespace GameSpace
 
 			_buildings = new List<Cube>();
 			Random random = new Random();
-			for (int i = 0; i < 15; i++)
+			for (int i = 0; i < 5; i++)
 			{
 				float x = (float)(random.NextDouble() * 80 - 40); // -40 to 40
 				float z = (float)(random.NextDouble() * 80 - 40); //-40 to 40
@@ -325,7 +325,7 @@ namespace GameSpace
 			int cols = 5; // 4*5 = 20 buildings
 			float spacing = 15f;
 
-			for (int i = 0; i< 20; i++)
+			for (int i = 0; i< 5; i++)
 			{
 				int row = i / cols; // which row (0-3)
 				int col = i % cols; // which column (0-4)
@@ -363,11 +363,12 @@ namespace GameSpace
 			Console.WriteLine("Shader created - no exceptions thrown");
 
 			_fbxLoader = new FBXModelLoaderPN();
+			string modelPath = Path.Combine(AppContext.BaseDirectory, "3DModels", "temple1EXP.fbx");
 
 			_importedMeshes = _fbxLoader.LoadToGL(
-				filePath:"3DModels/shrine1EXP.fbx";
-				position: new Vector3(0f, 0f, 5f),
-				scale: new Vector3(0.01f, 0.01f, 0.01f); // scaled down for compilatiohn
+				modelPath,
+				position: new Vector3(0f, 25f, -25f),
+				scale: new Vector3(.05f, .05f, .05f), // scaled down for compilatiohn
 				color: new Vector4(0.8f,0.8f,0.8f,1.0f)
 			);
 
@@ -541,16 +542,18 @@ namespace GameSpace
 
 			// _baseBuilding.Draw(_buildingShader);
 			// _building2.Draw(_buildingShader);
-			foreach (Cube building in _buildings)
-			{
-				building.Draw(_buildingShader);				
-			}
+
+			// Draw Building Squares Randomly
+			// foreach (Cube building in _buildings)
+			// {
+			// 	building.Draw(_buildingShader);				
+			// }
 
 
-			foreach (Cube building in _cityBuildings)
-			{
-				building.Draw(_buildingShader);
-			}
+			// foreach (Cube building in _cityBuildings)
+			// {
+			// 	building.Draw(_buildingShader);
+			// }
 			
 			if (_importedMeshes != null)
 			{

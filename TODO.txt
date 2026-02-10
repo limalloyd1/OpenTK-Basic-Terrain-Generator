@@ -6,8 +6,9 @@ TODO List:
 - change sky color (grey color w noise) in GL.ClearColor()
 
 - make infinite world (how to get rid of edge of world)
-- set up Assimp Importing
-- import shrine as first landmark 
+- add fog (post processing for mesh?)
+- add material to shrine: image texture?
+- add hill for shrine to sit on w/collisions 
 
 - make collisions for ground 
 - change object color (fragment shaders) 

@@ -50,7 +50,7 @@ void main()
 	float noise = random(pixelatedPos * 0.1);
 	
 	// Create distinct sand color variations (PS2 palette style)
-	float colorStep = floor(noise * 3.0) / 3.0; // 3 distinct shades
+	float colorStep = floor(noise * 10.0) / 10.0; // 3 distinct shades
 	vec3 sandBase = color.rgb;
 	vec3 sandDark = sandBase * 0.7;
 	vec3 sandLight = sandBase * 1.2;

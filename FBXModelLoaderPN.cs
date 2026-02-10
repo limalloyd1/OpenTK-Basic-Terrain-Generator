@@ -22,8 +22,7 @@ namespace FBXModelLoaderSpace
             var flags =
                 PostProcessSteps.Triangulate |
                 PostProcessSteps.JoinIdenticalVertices |
-                PostProcessSteps.GenerateNormals |
-                PostProcessSteps.GenerateSmoothNormals;
+                PostProcessSteps.GenerateNormals;
 
             Scene scene = _ctx.ImportFile(filePath, flags);
 
