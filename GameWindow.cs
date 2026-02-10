@@ -125,57 +125,27 @@ namespace GameSpace
 	{
 
 
-		float[] vertices =
-		{
-			// Front face
-			-0.5f, -0.5f,  0.5f,
-			0.5f, -0.5f,  0.5f,
-			0.5f,  0.5f,  0.5f,
-			-0.5f,  0.5f,  0.5f,
-			
-			// Back face
-			-0.5f, -0.5f, -0.5f,
-			-0.5f,  0.5f, -0.5f,
-			0.5f,  0.5f, -0.5f,
-			0.5f, -0.5f, -0.5f,
-			
-			// Top face
-			-0.5f,  0.5f, -0.5f,
-			-0.5f,  0.5f,  0.5f,
-			0.5f,  0.5f,  0.5f,
-			0.5f,  0.5f, -0.5f,
-			
-			// Bottom face
-			-0.5f, -0.5f, -0.5f,
-			0.5f, -0.5f, -0.5f,
-			0.5f, -0.5f,  0.5f,
-			-0.5f, -0.5f,  0.5f,
-			
-			// Right face
-			0.5f, -0.5f, -0.5f,
-			0.5f,  0.5f, -0.5f,
-			0.5f,  0.5f,  0.5f,
-			0.5f, -0.5f,  0.5f,
-			
-			// Left face
-			-0.5f, -0.5f, -0.5f,
-			-0.5f, -0.5f,  0.5f,
-			-0.5f,  0.5f,  0.5f,
-			-0.5f,  0.5f, -0.5f
-		};
-
 		List<Cube> _buildings;
 		List<Cube> _cityBuildings;
 
-		uint[] indices =
+		float[] groundVertices = 
 		{
-			0, 1, 2, 2, 3, 0,       // Front
-			4, 5, 6, 6, 7, 4,       // Back
-			8, 9, 10, 10, 11, 8,    // Top
-			12, 13, 14, 14, 15, 12, // Bottom
-			16, 17, 18, 18, 19, 16, // Right
-			20, 21, 22, 22, 23, 20  // Left
+			// Positions          // Normals (pointing up)
+			-50.0f, 0.0f, -50.0f,  0.0f, 1.0f, 0.0f,
+			50.0f, 0.0f, -50.0f,  0.0f, 1.0f, 0.0f,
+			50.0f, 0.0f,  50.0f,  0.0f, 1.0f, 0.0f,
+			-50.0f, 0.0f,  50.0f,  0.0f, 1.0f, 0.0f,
 		};
+
+		uint[] groundIndices = 
+		{
+			0,1,2,
+			2,3,0
+		};
+
+		int _groundVAO;
+		int _groundVBO;
+		int _groundEBO;
 
 
 		Matrix4 _view;
@@ -209,8 +179,8 @@ namespace GameSpace
 		Shader _buildingShader;
 		Shader _cityShader;
 
-		int _vertexBuffer;
-		int VertexArrayObject;
+		// int _vertexBuffer;
+		// int VertexArrayObject;
 
 		// Console.Writeline("Starting Game Window");
 
@@ -240,43 +210,26 @@ namespace GameSpace
 			// GL.ClearColor(0.1f,0.2f,0.4f,1.0f);
 
 			// Gray Sky
-			GL.ClearColor(0.5f,0.75f,0.8f, 1.0f);
-
-			VertexArrayObject = GL.GenVertexArray(); // generate VAO
-			GL.BindVertexArray(VertexArrayObject); // bind variable as VAO object
-
-			_vertexBuffer = GL.GenBuffer(); // Gen Array Buffer
-			GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBuffer); // Bind Array Buffer
-
-			GL.BufferData(BufferTarget.ArrayBuffer, vertices.Length * sizeof(float), vertices, BufferUsageHint.StaticDraw); // sets bufffer to memory based on VAO
+			GL.ClearColor(0.17f,0.2f,0.4f, 1.0f);
 			
-			_elementBuffer = GL.GenBuffer();
-			GL.BindBuffer(BufferTarget.ElementArrayBuffer, _elementBuffer);
-			GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(uint), indices, BufferUsageHint.StaticDraw);
-			Console.WriteLine($"Indices count: {indices.Length}");
-			Console.WriteLine($"VBO ID: {_vertexBuffer}");
-			Console.WriteLine($"EBO ID: {_elementBuffer}");
-			Console.WriteLine($"VAO ID: {VertexArrayObject}");
 
-			Console.WriteLine($"First vertex: ({vertices[0]}, {vertices[1]}, {vertices[2]})");
+			_groundVAO = GL.GenVertexArray();
+			GL.BindVertexArray(_groundVAO);
+
+			_groundVBO = GL.GenBuffer();
+			GL.BindBuffer(BufferTarget.ArrayBuffer, _groundVBO);
+			GL.BufferData(BufferTarget.ArrayBuffer, groundVertices.Length * sizeof(float), groundVertices, BufferUsageHint.StaticDraw);
+
+			_groundEBO = GL.GenBuffer();
+			GL.BindBuffer(BufferTarget.ElementArrayBuffer, _groundEBO);
+			GL.BufferData(BufferTarget.ElementArrayBuffer, groundIndices.Length * sizeof(uint), groundIndices, BufferUsageHint.StaticDraw);
 			
 			GL.VertexAttribPointer(0,3,VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
 			GL.EnableVertexAttribArray(0); // sets VAO attrib to 0?
 			
 			GL.VertexAttribPointer(1,3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 3 * sizeof(float));
 			GL.EnableVertexAttribArray(1);
-			// _baseBuilding = new Cube(
-			// 	new Vector3(-4, 5, -3),           // Position
-			// 	new Vector3(5, 15, 5),           // Scale
-			// 	new Vector4(0.2f, 0.6f, 0.9f, 1.0f)  // Blue color
-			// );
 
-			// _building2 = new Cube(
-			// 	// (x,y,z)
-			// 	new Vector3(4, 7, -4),           // Position
-			// 	new Vector3(7, 20, 7),           // Scale
-			// 	new Vector4(0.2f, 0.6f, 0.9f, 1.0f)  // Blue color
-			// );
 
 			_buildings = new List<Cube>();
 			Random random = new Random();
@@ -328,7 +281,7 @@ namespace GameSpace
 				_cityBuildings.Add(building);
 			}
 
-
+			
 			string vertexPath = "shader.vert";
 			string fragmentPath = "shader.frag";
 
@@ -500,10 +453,14 @@ namespace GameSpace
 
 			// Draw ground
 			_shader.SetVector4("color", 0.65f,0.58f,0.48f, 1.0f); 
-			Matrix4 groundModel = Matrix4.CreateScale(100.0f, 0.2f, 100.0f);
+			Matrix4 groundModel = Matrix4.Identity;
 			_shader.SetMatrix4("model", groundModel);
-			GL.BindVertexArray(VertexArrayObject);
-			GL.DrawElements(PrimitiveType.Triangles, 36, DrawElementsType.UnsignedInt, 0);
+
+			GL.BindVertexArray(_groundVAO);
+			GL.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, 0);
+			
+			// GL.BindVertexArray(VertexArrayObject);
+			// GL.DrawElements(PrimitiveType.Triangles, 36, DrawElementsType.UnsignedInt, 0);
 
 			_buildingShader.Use();
 			_buildingShader.SetMatrix4("view", _view);
@@ -570,8 +527,9 @@ namespace GameSpace
 				building.Dispose();
 			}
 
-			GL.DeleteBuffer(_vertexBuffer);
-			GL.DeleteVertexArray(VertexArrayObject);
+			GL.DeleteBuffer(_groundVBO);
+			GL.DeleteVertexArray(_groundVAO);
+			GL.DeleteBuffer(_groundEBO);
 		}
 
 		//protected override void OnFrameBufferResize(FramebufferResizeEventArgs e)
