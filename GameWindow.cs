@@ -23,50 +23,51 @@ namespace GameSpace
 		{
 			string VertexShaderSource = File.ReadAllText(vertexPath);
 			string FragmentShaderSource = File.ReadAllText(fragmentPath);
-
+			
 			VertexShader = GL.CreateShader(ShaderType.VertexShader);
 			GL.ShaderSource(VertexShader, VertexShaderSource);
-
+			
 			FragmentShader = GL.CreateShader(ShaderType.FragmentShader);
 			GL.ShaderSource(FragmentShader, FragmentShaderSource);
-
+			
 			GL.CompileShader(VertexShader);
-
 			GL.GetShader(VertexShader, ShaderParameter.CompileStatus, out int success);
 			if (success == 0)
 			{
 				string infoLog = GL.GetShaderInfoLog(VertexShader);
+				Console.WriteLine("==== VERTEX SHADER COMPILATION ERROR ====");
 				Console.WriteLine(infoLog);
+				Console.WriteLine("=========================================");
 			}
-
+			
 			GL.CompileShader(FragmentShader);
-
 			GL.GetShader(FragmentShader, ShaderParameter.CompileStatus, out int fSuccess);
 			if (fSuccess == 0)
 			{
 				string infoLog = GL.GetShaderInfoLog(FragmentShader);
+				Console.WriteLine("==== FRAGMENT SHADER COMPILATION ERROR ====");
 				Console.WriteLine(infoLog);
+				Console.WriteLine("===========================================");
 			}
-
+			
 			Handle = GL.CreateProgram();
-
 			GL.AttachShader(Handle, VertexShader);
 			GL.AttachShader(Handle, FragmentShader);
-
 			GL.LinkProgram(Handle);
-
+			
 			GL.GetProgram(Handle, GetProgramParameterName.LinkStatus, out int hSuccess);
 			if (hSuccess == 0)
 			{
 				string infoLog = GL.GetProgramInfoLog(Handle);
+				Console.WriteLine("==== SHADER LINKING ERROR ====");
 				Console.WriteLine(infoLog);
+				Console.WriteLine("===============================");
 			}
-
+			
 			GL.DetachShader(Handle, VertexShader);
 			GL.DetachShader(Handle, FragmentShader);
 			GL.DeleteShader(FragmentShader);
-			GL.DeleteShader(VertexShader);	
-
+			GL.DeleteShader(VertexShader);  
 		}
 
 		public void SetVector4(string name, float x, float y, float z, float w)
@@ -80,6 +81,18 @@ namespace GameSpace
 			int location = GL.GetUniformLocation(Handle, name);
 			GL.Uniform3(location, value);
 		}
+		
+		public void SetBool(string name, bool value)
+        {
+            int location = GL.GetUniformLocation(Handle, name);
+			GL.Uniform1(location, value ? 1 : 0);
+        }
+
+		public void SetFloat(string name, float value)
+        {
+            int location = GL.GetUniformLocation(Handle, name);
+			GL.Uniform1(location, value);
+        }
 
 		public void SetMatrix4(string name, Matrix4 data)
 		{
@@ -87,6 +100,7 @@ namespace GameSpace
 			if (location == -1)
 			{
 				Console.WriteLine($"Uniform {name} not found in shader!");
+				return;
 			}
 			GL.UniformMatrix4(location, false, ref data);
 		}
@@ -131,6 +145,8 @@ namespace GameSpace
 		List<Cube> _cityBuildings;
 		private FBXModelLoaderPN _fbxLoader;
 		private List<GLMeshPN> _importedMeshes;
+		private bool _showRain = true;
+		private float _rainTime = 0.0f;
 
 		float[] groundVertices = 
 		{
@@ -156,11 +172,12 @@ namespace GameSpace
 
 
 		Matrix4 _view;
+		Matrix4 viewNoTranslation;
 		Matrix4 _projection;
 		private Vector3 _cameraPosition = new Vector3(0, 1.7f, 10);
 		private Vector3 _cameraFront = new Vector3(0,0,-1);
 		private Vector3 _cameraUp = Vector3.UnitY;
-		private float _cameraSpeed = 7.5f;
+		private float _cameraSpeed = 10f;
 
 		private bool _firstMove = true;
 		private Vector2 _lastPos;
@@ -363,6 +380,7 @@ namespace GameSpace
 
 
 			_shader = new Shader(vertexPath, fragmentPath);
+		
 			_buildingShader = new Shader(buildingVertex, buildingFragment);
 			// _cityShader = new Shader(buildingVertex, cityBuildingFragment);
 			Console.WriteLine("Shader created - no exceptions thrown");
@@ -372,14 +390,14 @@ namespace GameSpace
 
 			_importedMeshes = _fbxLoader.LoadToGL(
 				modelPath,
-				position: new Vector3(0f, 25f, -25f),
+				position: new Vector3(0f, 25f, -105f),
 				scale: new Vector3(.05f, .05f, .05f), // scaled down for compilatiohn
 				color: new Vector4(0.8f,0.8f,0.8f,1.0f)
 			);
 
 			shrine = new FBXModelRenderer(
 				filePath: "3DModels/temple1EXP.fbx",
-				position: new Vector3(0f,25f, 25f),
+				position: new Vector3(0f,25f, 105f),
 				uniformScale: 0.05f,
 				color: new Vector4(0.8f,0.8f,0.8f,1.0f)
 			);
@@ -435,6 +453,17 @@ namespace GameSpace
 				Console.WriteLine("Closing Window...");
 				Close();
 			}
+
+			if (_showRain)
+            {
+                _rainTime += (float)e.Time;
+            }
+
+            if (KeyboardState.IsKeyDown(Keys.R))
+            {
+                Console.WriteLine("Switching Rain state");
+				_showRain = !_showRain;
+            }
 
 			if (KeyboardState.IsKeyDown(Keys.F))
 			{
@@ -497,10 +526,19 @@ namespace GameSpace
 
 			_view = Matrix4.LookAt(_cameraPosition, _cameraPosition + _cameraFront, _cameraUp);
 
+			viewNoTranslation = new Matrix4(new Matrix3(_view));
+
 			GL.DepthFunc(DepthFunction.Lequal);
 			_skyboxShader.Use();
-			_skyboxShader.SetMatrix4("view", _view);
+			GL.GetInteger(GetPName.CurrentProgram, out int current);
+			// Console.WriteLine($"Current GL program: {current}, Skybox Handle: {_skyboxShader.Handle}");
+
+			_skyboxShader.SetMatrix4("view", viewNoTranslation);
 			_skyboxShader.SetMatrix4("projection", _projection);
+			_skyboxShader.SetVector3("skyColor", new Vector3(0.15f, 0.15f, 0.25f));
+			_skyboxShader.SetBool("showRain", true);
+			_skyboxShader.SetFloat("time", _rainTime);
+
 			GL.BindVertexArray(_skyboxVAO);
 			GL.DrawArrays(PrimitiveType.Triangles, 0, 36);
 			GL.DepthFunc(DepthFunction.Less);
@@ -510,6 +548,7 @@ namespace GameSpace
 			
 			_shader.SetMatrix4("view", _view);
     		_shader.SetMatrix4("projection", _projection);
+			_shader.SetBool("showGrid", false);
 
 			_shader.SetVector3("lightPos", new Vector3(50f, 50f, 50f));
 			_shader.SetVector3("lightColor", new Vector3(1.0f, 0.9f, 0.7f));
@@ -522,25 +561,18 @@ namespace GameSpace
 				Console.WriteLine($"Camera pos: {_cameraPosition}");
 				Console.WriteLine($"Looking at: (0, 0, 0)");
 				
-				_shader.Use();
-				int modelLoc = GL.GetUniformLocation(_shader.Handle, "model");
-				int viewLoc = GL.GetUniformLocation(_shader.Handle, "view");
-				int projLoc = GL.GetUniformLocation(_shader.Handle, "projection");
-				
-				Console.WriteLine($"Shader Handle: {_shader.Handle}");
-				Console.WriteLine($"Uniform locations - model: {modelLoc}, view: {viewLoc}, proj: {projLoc}");
 			}
 			
 			_frameCount++;
 
 			// Draw ground
-			_shader.SetVector4("color", 0.28f,0.55f,0.20f, 1.0f); 
-			Matrix4 groundModel = Matrix4.Identity;
+			_shader.SetVector3("skyColor", new Vector3(0.13f, 0.3f, 0.22f));
+			_shader.SetVector4("color", 0.18f,0.22f,0.12f, 1.0f); 
+			Matrix4 groundModel = Matrix4.CreateScale(1000f)*Matrix4.CreateTranslation(0,-1,0);
 			_shader.SetMatrix4("model", groundModel);
 
 			GL.BindVertexArray(_groundVAO);
 			GL.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, 0);
-			
 			// GL.BindVertexArray(VertexArrayObject);
 			// GL.DrawElements(PrimitiveType.Triangles, 36, DrawElementsType.UnsignedInt, 0);
 
