@@ -9,6 +9,7 @@ using ErrorCode = OpenTK.Graphics.OpenGL4.ErrorCode;
 using System.IO;
 using System;
 using FBXModelLoaderSpace;
+using BasicTerrainGen;
 
 namespace GameSpace
 {
@@ -185,6 +186,10 @@ namespace GameSpace
 		Shader _buildingShader;
 		Shader _cityShader;
 		Shader _skyboxShader;
+
+		private FBXModelRenderer shrine;
+		private int shaderProgram;
+
 
 		// int _vertexBuffer;
 		// int VertexArrayObject;
@@ -369,6 +374,13 @@ namespace GameSpace
 				modelPath,
 				position: new Vector3(0f, 25f, -25f),
 				scale: new Vector3(.05f, .05f, .05f), // scaled down for compilatiohn
+				color: new Vector4(0.8f,0.8f,0.8f,1.0f)
+			);
+
+			shrine = new FBXModelRenderer(
+				filePath: "3DModels/temple1EXP.fbx",
+				position: new Vector3(0f,25f, 25f),
+				uniformScale: 0.05f,
 				color: new Vector4(0.8f,0.8f,0.8f,1.0f)
 			);
 
@@ -563,6 +575,8 @@ namespace GameSpace
 				}
 
 			}
+
+			shrine.Draw(_buildingShader);
 			
 			SwapBuffers();
 		}
@@ -590,6 +604,7 @@ namespace GameSpace
 			// _cityShader.Dispose();
 			//_baseBuilding.Dispose();
 			//_building2.Dispose();
+			shrine.Dispose();
 
 			foreach (Cube building in _buildings)
 			{
